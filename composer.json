@@ -1,0 +1,20 @@
+{
+	"name"        : "siteoffice/css2form",
+    "type"        : "library",
+	"description" : "SiteOffice css2form is a css parser in PHP 5.6+. Make html form from css file.",
+	"keywords"    : ["css", "form", "parser"],
+    "homepage"    : "http://www.siteoffice-cms.fr/",
+	"license"     : "MIT",
+	"authors"     : [
+		{
+			"name"     : "SiteOffice",
+            "homepage" : "http://www.siteoffice-cms.fr",
+            "email"    : "webmaster@siteoffice.fr"
+		}
+	],
+	"autoload": {
+        "psr-4": {
+            "Css2Form\\": "src"
+        }
+    }
+}
