@@ -16,17 +16,17 @@ class CssManager
     /**
      * @return void
      */
-    private function __construct() {
-    	
+    private function __construct($css) {
+    	!is_null($css) ? $this->setCss($css) : false;
     }
 
     /**
      * @return EntityManager
      */
-    public static function getManager()
+    public static function getManager($css = null)
     {
         if(is_null(self::$_instance)) {
-            self::$_instance = new CssManager();
+            self::$_instance = new CssManager($css);
         }
         return self::$_instance;
     }
@@ -40,31 +40,29 @@ class CssManager
     			$css .= '/* '.$line['comment'].' */'."\n";
     		}
     		
+    		if (array_key_exists('media', $line)){
+    			$css .= $line['media'].' {'."\n";
+    		}
+    		
     		$css .= $line['target'].' {'."\n";
     		if (array_key_exists('values', $line) && is_array($line['values'])) {
-    			foreach ($line['values'] as $value) {
+    			foreach ($line['values'] as $name => $value) {
     				if (array_key_exists('comment', $value)){
 		    			$css .= '/* '.$value['comment'].' */'."\n";
 		    		}
-    				$css .= $value['name'].': '.$value['value'].';'."\n";
+    				$css .= $name.': '.$value['value'].';'."\n";
     			}
     		}
     		$css .= '}'."\n";
+    		
+    		if (array_key_exists('media', $line)){
+    			$css .= '}'."\n";
+    		}
     	}
     	return $css;
     }
     
-    private function cleanMatches(&$matches)
-    {
-    	$string = $matches;
-    	foreach($this->cleanPattern() as $value){
-    		$matches = Table::del_value_r($value,$matches);
-    	}
-    	$matches = Table::sort_r(Table::array_filter_r($matches));
-    	
-    }
-    
-    private function cleanPattern($list = false)
+    private function pattern($list = true)
     {
     	$pattern = [
     		':active',':first-child',':hover',':focus',':last-child',':first-of-type'
@@ -83,18 +81,23 @@ class CssManager
     	$css = preg_replace('/[\n\r\t]/', '', $css);
     	$css = preg_replace('/[\s]?:[\s]?/', ': ', $css);
     	$css = preg_replace('/:[\s]([a-zA-Z0-9#])/', ':$1', $css);
-    	preg_match_all("/[^\.#\w]?([\.#\-\w%]?[-\w\d]([\.\sàéè\w-#%\(,\)'\">\/!@~]*(".$this->cleanPattern(true).")*)+)([*:{])?/", $css, $matches, PREG_SET_ORDER);
-    	$this->cleanMatches($matches);
-    	$comment = $target = $name = '';
-    	$key = -1;
+    	preg_match_all("/[^\.#\w]?([\.#\-\w%]?[-\w\d](?:[\.\sàéè\w-#%\(,\)'\">\/!@~]*(?:".$this->pattern().")*)+)([*:{])?/", $css, $matches, PREG_SET_ORDER);
+    	$comment = $target = $name = $media = $last = '';
+    	$key = 0;
     	foreach ($matches as $line => $value) {
-    		if (array_key_exists(2,$value) && trim($value[1]) != 'null') {
+    		if ($last != 'media' && preg_match('/^\@.*/', $value[0])) {
+    			$media = $value[0];
+    			$last = 'media';
+    		} elseif (array_key_exists(2,$value) && trim($value[1]) != 'null') {
     			switch($value[2]) {
     				case '*':
     					$comment = trim($value[1]);
     					break;
     				case '{':
-    					if (trim($value[1]) != $target) {
+    					if ($last == 'media' && $media != "") {
+    						$media .= $value[1];
+    						$last = $target = '';
+    					} elseif (trim($value[1]) != $target) {
     						if (empty($array[$key]['values'])) {
     							unset($array[$key]);
     						} else {
@@ -108,22 +111,31 @@ class CssManager
     							$array[$key]['comment'] = $comment;
     							$comment = '';
     						}
+    							
+							if ($media != '') {
+								$array[$key]['media'] = $media;
+								$media = '';
+							}
     					}
     					break;
     				case ':' :
-    					$name = trim($value[1]);
+    					if (!preg_match('/^\*.*/', $value[0])) {
+    						$name = trim($value[1]);
+    					} else {
+    						$name = '';
+    					}
     					break;
     			}
     		} elseif (!array_key_exists(2,$value) && array_key_exists(1,$value) && $name != '') {
     			$values = [
-    				'name' => $name,
+    				//'name' => $name,
     				'value' => trim($value[1])
     			];
     			if ($comment != '') {
 					$values['comment'] = $comment;
 					$comment = '';
 				}
-    			$array[$key]['values'][] = $values;
+    			$array[$key]['values'][$name] = $values;
     		}
     	}
     	return $array;
