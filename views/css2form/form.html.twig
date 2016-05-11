@@ -1,0 +1,16 @@
+{% for line in cssArray %}
+	<div class="col-xs-12">
+		<div class="left formTitle">
+			{% if line.comment is defined %}{{ line.comment }}
+			{% else %}{{ line.target }}{% endif %}
+		</div>
+		
+		{% if line.values is iterable %}{% for name,value in line.values %}
+			<div class="left">
+				{% if value.comment is defined %}{{ value.comment }}
+				{% else %}{{ name }}{% endif %}	
+			</div>
+			<input type="text" name="{{ name }}" value="{{ value.value }}" class="form-control">
+		{% endfor %}{% endif %}
+	</div><br />
+{% endfor %}
