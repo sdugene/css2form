@@ -1,16 +1,34 @@
-{% for line in cssArray %}
-	<div class="col-xs-12">
+{% for key,line in cssArray %}
+	<div {% if key != 0 %}class="paddingTop30"{% endif %} id="{{ line.target|replace({'#': "", '.': ""}) }}">
 		<div class="left formTitle">
-			{% if line.comment is defined %}{{ line.comment }}
-			{% else %}{{ line.target }}{% endif %}
+			{% if line.comment is defined %}
+				{{ line.comment }}
+				<input type="hidden" name='{"{{ line.target }}":"comment"}' value="{{ line.comment }}">
+			{% else %}
+				{{ line.target }}
+			{% endif %}
 		</div>
 		
 		{% if line.values is iterable %}{% for name,value in line.values %}
 			<div class="left">
-				{% if value.comment is defined %}{{ value.comment }}
-				{% else %}{{ name }}{% endif %}	
+				{% if value.comment is defined %}
+					{{ value.comment }}
+				{% else %}
+					{{ name }}
+				{% endif %}	
 			</div>
-			<input type="text" name="{{ name }}" value="{{ value.value }}" class="form-control">
+			{% if name matches '/color$/' %}
+				<div class="input-group colorpickerDiv">
+				    <input type="text" name='{"{{ line.target }}":"{{ name }}"}' value="{{ value.value }}" class="form-control" />
+				    <span class="input-group-addon"><i></i></span>
+				</div>
+			{% else %}
+			    <input type="text" name='{"{{ line.target }}":"{{ name }}"}' value="{{ value.value }}" class="form-control">
+			{% endif %}
+			
+			{% if value.comment is defined %}
+				<input type="hidden" name='{"{{ line.target }}":"{{ name }}_comment"}' value="{{ value.comment }}">
+			{% endif %}	
 		{% endfor %}{% endif %}
-	</div><br />
+	</div>
 {% endfor %}

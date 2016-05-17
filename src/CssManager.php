@@ -128,7 +128,6 @@ class CssManager
     			}
     		} elseif (!array_key_exists(2,$value) && array_key_exists(1,$value) && $name != '') {
     			$values = [
-    				//'name' => $name,
     				'value' => trim($value[1])
     			];
     			if ($comment != '') {
@@ -151,6 +150,12 @@ class CssManager
     	return $this->array2css($this->css);
     }
     
+    private function isJson($string)
+    {
+	 	json_decode($string);
+	 	return (json_last_error()===JSON_ERROR_NONE);
+	}
+    
     public function setCss($css)
     {
     	$this->css = $this->css2array($css);
@@ -161,6 +166,31 @@ class CssManager
     {
     	$css = file_get_contents($path);
     	$this->setCss = $this->css2array($css);
+    	return $this;
+    }
+    
+    public function setCssFromForm($array)
+    {
+    	$css = $cleanCss = [];
+    	foreach($array as $key =>$value) {
+    		if ($this->isJson($key)) {
+    			$line = json_decode($key, true);
+    			$target = key($line);
+    			$css[$target]['target'] = $target;
+    			if ($line[$target] == 'comment') {
+    				$css[$target][$line[$target]] = $value;
+    			} elseif (preg_match('/^(.*)_comment$/', $line[$target], $matches)) {
+    				$css[$target]['values'][$matches[1]]['comment'] = $value;
+    			} else {
+    				$css[$target]['values'][$line[$target]]['value'] = $value;
+    			}
+    		}
+    	}
+    	foreach ($css as $value) {
+    		$cleanCss[] = $value;
+    	}
+    	
+    	$this->css = $cleanCss;
     	return $this;
     }
 }
