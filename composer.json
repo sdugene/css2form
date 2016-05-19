@@ -12,6 +12,9 @@
             "email"    : "webmaster@siteoffice.fr"
 		}
 	],
+    "require": {
+        "leafo/lessphp"         : "0.4.0"
+    },
 	"autoload": {
         "psr-4": {
             "Css2Form\\": "src"

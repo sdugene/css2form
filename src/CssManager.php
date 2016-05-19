@@ -158,7 +158,9 @@ class CssManager
     
     public function setCss($css)
     {
-    	$this->css = $this->css2array($css);
+    	$less = new \lessc;
+		$less->setPreserveComments(true);
+    	$this->css = $this->css2array($less->compile($css));
     	return $this;
     }
     
