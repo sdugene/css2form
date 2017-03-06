@@ -81,7 +81,7 @@ class CssManager
     	$css = preg_replace('/[\n\r\t]/', '', $css);
     	$css = preg_replace('/[\s]?:[\s]?/', ': ', $css);
     	$css = preg_replace('/:[\s]([a-zA-Z0-9#])/', ':$1', $css);
-    	preg_match_all("/[^\.#\w]?([\.#\-\w%]?[-\w\d](?:[\.\sàéè\w-#%\(,\)'\">\/!@~]*(?:".$this->pattern().")*)+)([*:{])?/", $css, $matches, PREG_SET_ORDER);
+    	preg_match_all("/[^\.#\w]?(['\"]?[\.#\-\w%]?[-\w\d](?:[\.\sàéè\w-#%\(,\)'\">\/!@~]*(?:".$this->pattern().")*)+)([*:{])?/", $css, $matches, PREG_SET_ORDER);
     	$comment = $target = $name = $media = $last = '';
     	$key = 0;
     	foreach ($matches as $line => $value) {
