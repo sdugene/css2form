@@ -1,7 +1,7 @@
 {% set lastTitle = '' %}
 {% for key,line in cssArray %}
-	<div {% if key != 0 %}class="paddingTop30"{% endif %} id="css_{{ line.target|replace({'#': "", '.': ""}) }}">
-		<div class="left formTitle {% if line.comment is defined and lastTitle==line.comment %}hidden{% endif %}" >
+	<div id="css_{{ line.target|replace({'#': "", '.': ""}) }}">
+		<div class="left formTitle {% if key != 0 %}paddingTop20{% endif %} {% if line.comment is defined and lastTitle==line.comment %}hidden{% endif %}" >
 			{% if line.comment is defined %}
 				{{ line.comment }}
 				{% set lastTitle = line.comment %}
@@ -12,7 +12,7 @@
 		</div>
 		
 		{% if line.values is iterable %}{% for name,value in line.values %}
-			<div class="left">
+			<div class="paddingBottom10"><div class="left">
 				{% if value.comment is defined %}
 					{{ value.comment }}
 				{% else %}
@@ -30,7 +30,7 @@
 			
 			{% if value.comment is defined %}
 				<input type="hidden" name='{"{{ line.target }}":"{{ name }}_comment"}' value="{{ value.comment }}">
-			{% endif %}	
+			{% endif %}</div>
 		{% endfor %}{% endif %}
 	</div>
 {% endfor %}

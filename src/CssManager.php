@@ -84,7 +84,7 @@ class CssManager
     	preg_match_all("/[^\.#\w]?(['\"]?[\.#\-\w%]?[-\w\d](?:[\.\sàéè\w-#%\(,\)'\">\/!@~]*(?:".$this->pattern().")*)+)([*:{][*]?)?/", $css, $matches, PREG_SET_ORDER);
     	$comment = $title = [];
     	$target = $name = $media = $last = '';
-    	$key = 0;
+    	$key = $keyValue = 0;
     	foreach ($matches as $line => $value) {
     		if ($last != 'media' && preg_match('/^\@.*/', $value[0])) {
     			$media = $value[0];
@@ -129,14 +129,15 @@ class CssManager
     					}
     					break;
     			}
-    		} elseif (!array_key_exists(2,$value) && array_key_exists(1,$value) && $name != '' && !isset($values)) {
+    		} elseif (!array_key_exists(2,$value) && array_key_exists(1,$value) && $name != '') {
     			$values = [
     				'value' => trim($value[1])
     			];
-    			if (array_key_exists($key, $comment) && $comment[$key] != '') {
-					$values['comment'] = $comment[$key];
+    			if (array_key_exists($keyValue, $comment) && $comment[$keyValue] != '') {
+					$values['comment'] = $comment[$keyValue];
 				}
     			$array[$key]['values'][$name] = $values;
+    			$keyValue++;
     		}
     	}
     	return $array;
