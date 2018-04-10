@@ -37,7 +37,7 @@ class CssManager
     	$css = '';
     	foreach($array as $line) {
     		if (array_key_exists('comment', $line)){
-    			$css .= '/* '.$line['comment'].' */'."\n";
+    			$css .= '/** '.$line['comment'].' **/'."\n";
     		}
     		
     		if (array_key_exists('media', $line)){
@@ -81,8 +81,9 @@ class CssManager
     	$css = preg_replace('/[\n\r\t]/', '', $css);
     	$css = preg_replace('/[\s]?:[\s]?/', ': ', $css);
     	$css = preg_replace('/:[\s]([a-zA-Z0-9#])/', ':$1', $css);
-    	preg_match_all("/[^\.#\w]?(['\"]?[\.#\-\w%]?[-\w\d](?:[\.\sàéè\w-#%\(,\)'\">\/!@~]*(?:".$this->pattern().")*)+)([*:{])?/", $css, $matches, PREG_SET_ORDER);
-    	$comment = $target = $name = $media = $last = '';
+    	preg_match_all("/[^\.#\w]?(['\"]?[\.#\-\w%]?[-\w\d](?:[\.\sàéè\w-#%\(,\)'\">\/!@~]*(?:".$this->pattern().")*)+)([*:{][*]?)?/", $css, $matches, PREG_SET_ORDER);
+    	$comment = $title = [];
+    	$target = $name = $media = $last = '';
     	$key = 0;
     	foreach ($matches as $line => $value) {
     		if ($last != 'media' && preg_match('/^\@.*/', $value[0])) {
@@ -91,8 +92,10 @@ class CssManager
     		} elseif (array_key_exists(2,$value) && trim($value[1]) != 'null') {
     			switch($value[2]) {
     				case '*':
-    					$comment = trim($value[1]);
+    				    $comment[] = trim($value[1]);
     					break;
+    				case '**':
+    				    $title[] = trim($value[1]);
     				case '{':
     					if ($last == 'media' && $media != "") {
     						$media .= $value[1];
@@ -101,15 +104,15 @@ class CssManager
     						if (empty($array[$key]['values'])) {
     							unset($array[$key]);
     						} else {
+    						    unset($values);
     							$key++;
     						}
     						$target = trim($value[1]);
     						$array[$key]['target'] = trim($value[1]);
     						$array[$key]['values'] = [];
     						
-    						if ($comment != '') {
-    							$array[$key]['comment'] = $comment;
-    							$comment = '';
+    						if (array_key_exists($key, $title) && $title[$key] != '') {
+    							$array[$key]['comment'] = $title[$key];
     						}
     							
 							if ($media != '') {
@@ -126,13 +129,12 @@ class CssManager
     					}
     					break;
     			}
-    		} elseif (!array_key_exists(2,$value) && array_key_exists(1,$value) && $name != '') {
+    		} elseif (!array_key_exists(2,$value) && array_key_exists(1,$value) && $name != '' && !isset($values)) {
     			$values = [
     				'value' => trim($value[1])
     			];
-    			if ($comment != '') {
-					$values['comment'] = $comment;
-					$comment = '';
+    			if (array_key_exists($key, $comment) && $comment[$key] != '') {
+					$values['comment'] = $comment[$key];
 				}
     			$array[$key]['values'][$name] = $values;
     		}
@@ -158,9 +160,10 @@ class CssManager
     
     public function setCss($css)
     {
-    	$less = new \lessc;
+    	/*$less = new \lessc;
 		$less->setPreserveComments(true);
-    	$this->css = $this->css2array($less->compile($css));
+    	$this->css = $this->css2array($less->compile($css));*/
+    	$this->css = $this->css2array($css);
     	return $this;
     }
     

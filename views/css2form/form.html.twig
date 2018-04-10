@@ -1,8 +1,10 @@
+{% set lastTitle = '' %}
 {% for key,line in cssArray %}
 	<div {% if key != 0 %}class="paddingTop30"{% endif %} id="css_{{ line.target|replace({'#': "", '.': ""}) }}">
-		<div class="left formTitle">
+		<div class="left formTitle {% if line.comment is defined and lastTitle==line.comment %}hidden{% endif %}" >
 			{% if line.comment is defined %}
 				{{ line.comment }}
+				{% set lastTitle = line.comment %}
 				<input type="hidden" name='{"{{ line.target }}":"comment"}' value="{{ line.comment }}">
 			{% else %}
 				{{ line.target }}
